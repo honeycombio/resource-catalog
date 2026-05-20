@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Honeycomb Resources</title>
+<title>Honeycomb — Anomalies</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -202,7 +202,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>Boards</div>
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>Triggers</div>
   <div class="nav-sep"></div>
-  <div class="nav-item active" onclick="goTo('list')"><span class="nav-dot"></span>Resources</div>
+  <div class="nav-item active" onclick="goTo('list')"><span class="nav-dot"></span>Anomalies</div>
   <div class="nav-sep"></div>
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>Canvas</div>
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>History</div>
@@ -213,8 +213,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <!-- LIST -->
 <div class="screen active" id="screen-list">
   <div class="page-header">
-    <div class="page-title">Resources</div>
-    <div class="page-meta">Auto-discovered from telemetry · 47 resources across 2 environments</div>
+    <div class="page-title">Anomalies</div>
+    <div class="page-meta">Auto-discovered from telemetry · 47 services and hosts</div>
   </div>
   <div class="cards-row">
     <div class="summary-card alert">
@@ -267,7 +267,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <!-- DETAIL -->
 <div class="screen" id="screen-detail">
   <div class="breadcrumb">
-    <span class="bc-link" onclick="goTo('list')">Resources</span>
+    <span class="bc-link" onclick="goTo('list')">Anomalies</span>
     <span class="bc-sep">/</span>
     <span class="bc-current" id="d-name">payment-service</span>
     <span class="tag" style="margin-left:6px" id="d-type-tag">service</span>
@@ -324,7 +324,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <!-- SIGNAL DETAIL -->
 <div class="screen" id="screen-signal">
   <div class="breadcrumb">
-    <span class="bc-link" onclick="goTo('list')">Resources</span>
+    <span class="bc-link" onclick="goTo('list')">Anomalies</span>
     <span class="bc-sep">/</span>
     <span class="bc-link" onclick="goTo('detail')" id="bc-svc">payment-service</span>
     <span class="bc-sep">/</span>
