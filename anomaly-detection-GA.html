@@ -65,7 +65,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .search-input { width: 100%; height: 32px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 0 10px 0 30px; font-size: 13px; color: var(--text2); font-family: var(--font); outline: none; }
 .search-input::placeholder { color: var(--text3); }
 .pagination { display: flex; align-items: center; gap: 4px; margin-left: auto; }
-.page-btn { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); }
+.page-btn { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; cursor: pointer; font-size: 12px; color: var(--text2); }
 .page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
 .table-wrap { flex: 1; overflow-y: auto; padding: 16px 24px; background: var(--bg); }
@@ -202,7 +202,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .toggle-sm.on::after { right: 2px; left: auto; }
 .toggle-sm.off::after { left: 2px; }
 .anom-paginate { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--text3); }
-.anom-page-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); }
+.anom-page-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; cursor: pointer; font-size: 12px; color: var(--text2); }
 .anom-page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 .anom-showing { display: flex; align-items: center; gap: 4px; }
 .anom-showing select { height: 24px; border: 1px solid var(--border2); border-radius: 4px; font-size: 12px; padding: 0 4px; background: var(--bg2); color: var(--text2); }
@@ -216,10 +216,16 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .ask-canvas { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--bg2); border: 1.5px solid var(--blue-border); border-radius: 20px; font-size: 13px; color: var(--blue); cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.08); z-index: 100; white-space: nowrap; }
 .ask-canvas:hover { background: var(--blue-bg); }
 .ask-canvas-x { color: var(--text3); font-size: 14px; margin-left: 4px; }
+
+/* Milestone banner */
+.milestone-banner { position: fixed; top: 0; left: 0; right: 0; height: 44px; background: #1e1b4b; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; z-index: 1000; font-family: 'IBM Plex Sans', sans-serif; }
+
 </style>
 </head>
 <body>
-<div class="app">
+
+<div class="milestone-banner"><span style="color:transparent;font-size:13px;white-space:nowrap;flex-shrink:0;pointer-events:none">← placeholder</span><span style="position:absolute;left:50%;transform:translateX(-50%);color:#ffffff;font-size:15px;font-weight:500;white-space:nowrap;pointer-events:none">Milestone: Anomaly Detection GA</span><a href="Auto-Discovered-Resources-and-Anomaly-Status.html" style="color:#ffffff;font-size:13px;text-decoration:none;font-weight:400;white-space:nowrap;flex-shrink:0">Milestone: Auto-Discovered Resources →</a></div>
+<div class="app" style="margin-top:44px">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
