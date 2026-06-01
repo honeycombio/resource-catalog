@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Honeycomb — Q4 Proactive Automated Troubleshooting</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f8fa; --bg2: #ffffff; --bg3: #f0f2f5; --bg4: #e4e7ec;
+  --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+  --text: #111827; --text2: #374151; --text3: #9ca3af;
+  --red: #c0392b; --red-bg: rgba(192,57,43,0.07); --red-border: rgba(192,57,43,0.2);
+  --green: #1a7f4b; --green-bg: rgba(26,127,75,0.07); --green-border: rgba(26,127,75,0.2);
+  --blue: #1d4ed8; --blue-bg: rgba(29,78,216,0.06); --blue-border: rgba(29,78,216,0.18);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.06); --purple-border: rgba(124,58,237,0.2);
+  --orange: #ea580c; --orange-bg: rgba(234,88,12,0.06); --orange-border: rgba(234,88,12,0.2);
+  --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+}
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; overflow: hidden; }
+.app { display: flex; height: 100vh; }
+
+/* SIDEBAR */
+.sidebar { width: 112px; background: #1a1f2e; border-right: none; display: flex; flex-direction: column; padding: 12px 0; flex-shrink: 0; }
+.env-badge { margin: 0 10px 14px; padding: 4px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; font-size: 11px; color: rgba(255,255,255,0.7); font-family: var(--mono); }
+.nav-sep { height: 1px; background: rgba(255,255,255,0.1); margin: 6px 10px; }
+.nav-item { padding: 7px 12px; font-size: 12px; color: rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; gap: 7px; }
+.nav-item:hover { color: rgba(255,255,255,0.75); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,0.1); border-right: 2px solid #6366f1; font-weight: 500; }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0; }
+.nav-item.active .nav-dot { background: #6366f1; }
+
+/* MAIN */
+.main { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* SHARED */
+.breadcrumb { padding: 10px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; font-size: 13px; flex-shrink: 0; background: var(--bg2); }
+.bc-link { color: var(--blue); cursor: pointer; }
+.bc-link:hover { text-decoration: underline; }
+.bc-sep { color: var(--text3); }
+.badge { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.badge.anomalous { background: #fde8e8; color: var(--red); border: none; }
+.badge.normal { background: #d1fae5; color: #065f46; border: none; }
+.badge.training { background: #dbeafe; color: #1e40af; border: none; font-size: 12px; }
+.badge.unknown { background: var(--bg3); color: var(--text3); border: none; }
+.badge.off { background: #f3f4f6; color: #6b7280; border: none; }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot.anomalous { background: var(--red); }
+.dot.normal { background: var(--green); }
+.dot.unknown { background: var(--text3); }
+.ds-pill { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 3px; font-size: 10px; font-family: var(--mono); background: #ede9fe; color: #6d28d9; margin-right: 3px; }
+
+/* ════════════════════════════
+   SCREEN 1 — ANOMALIES LIST
+════════════════════════════ */
+.page-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); }
+.page-title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.beta-tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); font-weight: 500; }
+.list-controls { padding: 10px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: var(--bg2); }
+.search-wrap { flex: 1; max-width: 480px; position: relative; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; }
+.search-input { width: 100%; height: 32px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 0 10px 0 30px; font-size: 13px; color: var(--text2); font-family: var(--font); outline: none; }
+.search-input::placeholder { color: var(--text3); }
+.pagination { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.page-btn { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); }
+.page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+.table-wrap { flex: 1; overflow-y: auto; padding: 16px 24px; background: var(--bg); }
+.table-card { background: var(--bg2); border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+.table-head { display: grid; grid-template-columns: 110px 1fr 1fr 1fr 1fr; padding: 7px 24px; border-bottom: 1px solid var(--border); background: var(--bg3); position: sticky; top: 0; z-index: 1; }
+.th { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 3px; cursor: pointer; user-select: none; }
+.th:hover { color: var(--text2); }
+
+.svc-group { border-bottom: 1px solid var(--border); background: var(--bg2); cursor: pointer; }
+.svc-group:hover { background: var(--bg3); }
+
+.svc-row { display: grid; grid-template-columns: 110px 1fr 1fr 1fr 1fr; padding: 11px 24px 4px; align-items: start; }
+.svc-name-cell .name { font-size: 14px; font-weight: 500; color: var(--blue); }
+.svc-name-cell .name:hover { text-decoration: underline; }
+.svc-datasets { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+
+.signal-sub-row { display: grid; grid-template-columns: 110px 1fr 1fr 1fr 1fr; padding: 4px 24px; align-items: center; border-top: 1px solid rgba(0,0,0,0.04); }
+.sig-name-cell { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.sig-link { color: var(--blue); cursor: pointer; }
+.sig-link:hover { text-decoration: underline; }
+.sig-icon { width: 15px; height: 15px; flex-shrink: 0; }
+.last-anom { font-size: 12px; color: var(--text2); font-family: var(--mono); white-space: nowrap; }
+.last-anom.recent { color: var(--red); font-weight: 500; }
+.recipients-cell { font-size: 12px; color: var(--text2); }
+.actions-cell { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.btn { height: 27px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); font-size: 12px; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: var(--font); }
+.btn:hover { background: var(--bg3); }
+.btn.inv { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue); }
+.new-badge { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: var(--blue); color: #fff; font-weight: 500; }
+.seasonal-tag { font-size: 9px; padding: 1px 4px; border-radius: 2px; background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); margin-left: 4px; vertical-align: middle; }
+
+/* ════════════════════════════
+   SCREEN 2 — SERVICE DETAIL
+   The resource as a thing
+════════════════════════════ */
+.svc-detail-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); }
+.svc-detail-title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+.svc-detail-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.svc-meta-item { font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 4px; }
+.svc-meta-item strong { color: var(--text2); }
+.run-query-btn { margin-left: auto; height: 32px; padding: 0 14px; background: var(--blue); border: none; border-radius: 6px; font-size: 13px; color: #fff; cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 6px; }
+
+.svc-detail-body { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 280px; gap: 0; }
+.svc-detail-main { padding: 20px 24px; overflow-y: auto; border-right: 1px solid var(--border); }
+.svc-detail-sidebar { padding: 20px; overflow-y: auto; background: var(--bg); }
+
+.section-heading { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+
+/* Signals on service detail */
+.signal-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+.signal-card:hover { border-color: var(--border2); }
+.signal-card.anomalous { border-color: var(--red-border); background: #fef9f9; }
+.signal-card-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+.signal-card-name { font-size: 14px; font-weight: 500; flex: 1; }
+.signal-card-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.signal-card-body { padding: 0 16px 14px; }
+.signal-card-desc { font-size: 12px; color: var(--text3); margin-bottom: 8px; }
+.mini-chart { height: 40px; display: block; width: 100%; }
+.signal-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.signal-type-tag { display: inline-flex; height: 17px; padding: 0 6px; border-radius: 3px; font-size: 10px; font-weight: 500; align-items: center; }
+.sig-type-error-rate { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.sig-type-request-rate { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+.sig-type-latency { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
+.sig-type-presence { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.sig-type-metrics { background: rgba(5,150,105,0.07); color: #065f46; border: 1px solid rgba(5,150,105,0.2); }
+.sig-type-cpu { background: rgba(5,150,105,0.07); color: #065f46; border: 1px solid rgba(5,150,105,0.2); }
+.view-signal { font-size: 12px; color: var(--blue); cursor: pointer; }
+.view-signal:hover { text-decoration: underline; }
+
+/* Sidebar panels */
+.sidebar-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+.sidebar-card-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.meta-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 13px; }
+.meta-row:last-child { border-bottom: none; }
+.meta-key { color: var(--text3); }
+.meta-val { color: var(--text2); font-family: var(--mono); font-size: 12px; text-align: right; }
+.explore-row { display: flex; align-items: center; padding: 8px 10px; border-radius: 5px; border: 1px solid var(--border); margin-bottom: 6px; cursor: pointer; background: var(--bg3); transition: background 0.1s; }
+.explore-row:last-child { margin-bottom: 0; }
+.explore-row:hover { background: var(--bg4); }
+.explore-row-name { font-size: 13px; font-weight: 500; flex: 1; }
+.explore-row-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.explore-arrow { color: var(--blue); font-size: 13px; margin-left: auto; flex-shrink: 0; }
+
+/* ════════════════════════════
+   SCREEN 3 — SIGNAL DETAIL
+════════════════════════════ */
+.signal-detail-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); display: flex; align-items: flex-start; gap: 12px; }
+.signal-detail-title-area { flex: 1; }
+.signal-detail-title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
+.signal-detail-subtitle { font-size: 13px; color: var(--text3); font-family: var(--mono); }
+.signal-detail-body { flex: 1; overflow-y: auto; padding: 20px 24px; background: var(--bg); display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-content: start; }
+.chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 0; }
+.chart-sensitivity { font-size: 13px; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.change-btn { height: 24px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); font-size: 12px; color: var(--text2); cursor: pointer; font-family: var(--font); }
+.chart-legend { display: flex; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-line { height: 2px; width: 18px; border-radius: 1px; }
+.legend-band { height: 8px; width: 18px; border-radius: 2px; }
+.seasonality-callout { margin-top: 12px; background: var(--blue-bg); border: 1px solid var(--blue-border); border-radius: 6px; padding: 9px 12px; font-size: 12px; color: var(--blue); line-height: 1.6; }
+.anomaly-history-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+.anom-table { width: 100%; border-collapse: collapse; }
+.anom-table th { font-size: 11px; font-weight: 500; color: var(--text3); text-align: left; padding: 0 0 8px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+.anom-table td { font-size: 13px; color: var(--text2); padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); vertical-align: middle; }
+.anom-table tr:last-child td { border-bottom: none; }
+.vote-group { display: flex; gap: 8px; }
+.vote-btn { font-size: 12px; color: var(--text3); cursor: pointer; padding: 2px 8px; border-radius: 4px; border: 1px solid transparent; }
+.vote-btn.yes:hover { border-color: var(--green-border); color: var(--green); }
+.vote-btn.no:hover { border-color: var(--red-border); color: var(--red); }
+.vote-btn:hover { border-color: var(--border2); color: var(--text2); }
+.auto-invest-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+.toggle-row { display: flex; align-items: flex-start; gap: 10px; }
+.toggle { width: 34px; height: 19px; border-radius: 10px; flex-shrink: 0; position: relative; cursor: pointer; margin-top: 2px; }
+.toggle.on { background: var(--green); }
+.toggle.off { background: var(--bg4); }
+.toggle::after { content:''; position: absolute; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: left 0.15s; }
+.toggle.on::after { right: 2px; left: auto; }
+.toggle.off::after { left: 2px; }
+.invest-text { font-size: 13px; color: var(--text2); line-height: 1.6; flex: 1; }
+.invest-text strong { color: var(--text); }
+.recipients-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+.recip-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; gap: 10px; }
+.recip-row:last-child { border-bottom: none; }
+.recip-name { flex: 1; color: var(--text2); }
+.recip-actions { display: flex; gap: 8px; color: var(--text3); margin-left: auto; }
+.recip-actions svg { cursor: pointer; }
+.recip-actions svg:hover { color: var(--text2); }
+.recip-provider { width: 140px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.recip-recipient { flex: 1; color: var(--text2); }
+.recip-severity { width: 80px; color: var(--text2); }
+.recip-mute { width: 60px; }
+.toggle-sm { width: 34px; height: 19px; border-radius: 10px; flex-shrink: 0; position: relative; cursor: pointer; }
+.toggle-sm.on { background: var(--green); }
+.toggle-sm.off { background: var(--bg4); }
+.toggle-sm::after { content:""; position: absolute; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; }
+.toggle-sm.on::after { right: 2px; left: auto; }
+.toggle-sm.off::after { left: 2px; }
+.anom-paginate { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--text3); }
+.anom-page-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); }
+.anom-page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.anom-showing { display: flex; align-items: center; gap: 4px; }
+.anom-showing select { height: 24px; border: 1px solid var(--border2); border-radius: 4px; font-size: 12px; padding: 0 4px; background: var(--bg2); color: var(--text2); }
+.invest-row-btn { height: 27px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); font-size: 12px; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: var(--font); }
+.invest-row-btn:hover { background: var(--bg3); }
+.add-recip-btn { height: 30px; padding: 0 14px; background: var(--blue); border: none; border-radius: 6px; font-size: 13px; color: #fff; cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; }
+.integ-btn { height: 30px; padding: 0 12px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; font-size: 13px; color: var(--text2); cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; }
+.recip-name { flex: 1; color: var(--text2); }
+
+/* Ask canvas floating */
+.ask-canvas { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--bg2); border: 1.5px solid var(--blue-border); border-radius: 20px; font-size: 13px; color: var(--blue); cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.08); z-index: 100; white-space: nowrap; }
+.ask-canvas:hover { background: var(--blue-bg); }
+.ask-canvas-x { color: var(--text3); font-size: 14px; margin-left: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="env-badge">prod</div>
+  <div class="nav-item"><span class="nav-dot"></span>Home</div>
+  <div class="nav-item"><span class="nav-dot"></span>Query</div>
+  <div class="nav-item"><span class="nav-dot"></span>Boards</div>
+  <div class="nav-item"><span class="nav-dot"></span>Triggers</div>
+  <div class="nav-sep"></div>
+  <div class="nav-item active" onclick="goTo('list')"><span class="nav-dot"></span>Anomalies</div>
+  <div class="nav-sep"></div>
+  <div class="nav-item"><span class="nav-dot"></span>Canvas</div>
+  <div class="nav-item"><span class="nav-dot"></span>History</div>
+</div>
+
+<div class="main">
+
+<!-- ════ SCREEN 1 — LIST ════ -->
+<div class="screen active" id="screen-list">
+  <div class="page-header">
+    <div class="page-title">Anomalies <span class="beta-tag">Beta</span></div>
+  </div>
+  <div class="list-controls">
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 9.5l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <input class="search-input" id="search-input" placeholder="Search by service name or status" oninput="filterList()">
+    </div>
+    <div class="pagination">
+      <div class="page-btn">‹</div>
+      <div class="page-btn active">1</div>
+      <div class="page-btn">2</div>
+      <div class="page-btn">3</div>
+      <span style="color:var(--text3);font-size:13px">···</span>
+      <div class="page-btn">10</div>
+      <div class="page-btn">›</div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <div class="table-head">
+      <span class="th">Status ⇅</span>
+      <span class="th">Service Name ⇅</span>
+      <span class="th">Recipients ⇅</span>
+      <span class="th">Signal ⇅</span>
+      <span class="th">Last anomaly detected ⇅</span>
+    </div>
+    <div id="list-body"></div>
+  </div>
+</div>
+
+<!-- ════ SCREEN 2 — SERVICE DETAIL ════ -->
+<div class="screen" id="screen-service">
+  <div class="breadcrumb">
+    <span class="bc-link" onclick="goTo('list')">Anomalies</span>
+    <span style="color:var(--text3)">/</span>
+    <span id="svc-bc" style="color:var(--text);font-weight:500">basset</span>
+  </div>
+  <div class="svc-detail-header">
+    <div class="svc-detail-title" id="svc-title">basset</div>
+    <div class="svc-detail-meta" id="svc-meta"></div>
+  </div>
+  <div class="svc-detail-body">
+    <div class="svc-detail-main" id="svc-main"></div>
+    <div class="svc-detail-sidebar" id="svc-sidebar"></div>
+  </div>
+  <div class="ask-canvas">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 4H12L8.75 7l1.3 3.8L6.5 8.5l-3.55 2.3L4.25 7 1 5h4.2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    Ask canvas
+    <span class="ask-canvas-x">✕</span>
+  </div>
+</div>
+
+<!-- ════ SCREEN 3 — SIGNAL DETAIL ════ -->
+<div class="screen" id="screen-signal">
+  <div class="breadcrumb">
+    <span class="bc-link" onclick="goTo('list')">Anomalies</span>
+    <span style="color:var(--text3)">/</span>
+    <span class="bc-link" id="sig-bc-svc" onclick="goTo('service')">basset</span>
+    <span style="color:var(--text3)">/</span>
+    <span id="sig-bc-signal" style="color:var(--text);font-weight:500">Error rate</span>
+  </div>
+  <div class="signal-detail-header">
+    <div class="signal-detail-title-area">
+      <div class="signal-detail-title" id="sig-title">basset</div>
+      <div class="signal-detail-subtitle" id="sig-subtitle">Error rate · basset · May 19 2026</div>
+    </div>
+    <button class="run-query-btn">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2h9v9" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M2 11L11 2" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Run Query
+    </button>
+  </div>
+  <div class="signal-detail-body" id="signal-body"></div>
+  <div class="ask-canvas">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 4H12L8.75 7l1.3 3.8L6.5 8.5l-3.55 2.3L4.25 7 1 5h4.2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    Ask canvas
+    <span class="ask-canvas-x">✕</span>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+// Key: services are persistent objects mapped across datasets.
+// basset in frontend + backend-api = one service row, two dataset pills.
+
+const services = [
+  // ── SERVICES ──────────────────────────────────────────────────────────
+  {
+    id: 'payment-public',
+    name: 'payment',
+    type: 'service',
+    status: 'anomalous',
+    datasets: ['public-api'],
+    firstSeen: '6 months ago',
+    lastSeen: 'just now',
+    env: 'production',
+    recipients: ['#alerts', '+2 more'],
+    signals: [
+      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'2 hours ago', investigation:true, recipients:['#alerts +2 more'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Spiking since 02:14am — 11 minutes.' },
+      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'1 hour ago', investigation:false, recipients:['#alerts +2 more'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Receiving telemetry normally.' },
+      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'3 days ago', investigation:true, recipients:['#alerts +2 more'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range for this time of day.' },
+      { name:'Latency (P95)', type:'latency', status:'normal', lastAnomaly:'5 days ago', investigation:false, recipients:['#alerts +2 more'], chart:'noisy-flat', seasonality:false, sensitivity:'Low sensitivity threshold', desc:'Within expected range.' },
+    ]
+  },
+  {
+    id: 'prod-postgres',
+    name: 'prod-postgres',
+    type: 'host',
+    status: 'anomalous',
+    datasets: ['infrastructure'],
+    firstSeen: '1 year ago',
+    lastSeen: '30 sec ago',
+    env: 'production',
+    recipients: ['#infra-alerts'],
+    signals: [
+      { name:'CPU usage', type:'cpu', status:'anomalous', lastAnomaly:'8 mins ago', investigation:true, recipients:['#infra-alerts'], chart:'spike', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'CPU sustained above normal range. Shared by order-service, inventory-service, user-service.' },
+      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'1 week ago', investigation:false, recipients:['#infra-alerts'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Host sending telemetry normally.' },
+    ]
+  },
+  {
+    id: 'payment-checkout-endpoint',
+    name: '/checkout',
+    type: 'endpoint',
+    parentService: 'payment',
+    status: 'anomalous',
+    datasets: ['public-api'],
+    firstSeen: '6 months ago',
+    lastSeen: 'just now',
+    env: 'production',
+    recipients: ['#alerts'],
+    signals: [
+      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'2 hours ago', investigation:true, recipients:['#alerts'], chart:'spike', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'Elevated on this endpoint specifically.' },
+      { name:'Latency (P95)', type:'latency', status:'normal', lastAnomaly:'1 week ago', investigation:true, recipients:['#alerts'], chart:'noisy-flat', seasonality:false, sensitivity:'Low sensitivity threshold', desc:'Within expected range.' },
+    ]
+  },
+  {
+    id: 'checkout-service',
+    name: 'checkout-service',
+    type: 'service',
+    status: 'anomalous',
+    datasets: ['public-api'],
+    firstSeen: '6 months ago',
+    lastSeen: 'just now',
+    env: 'production',
+    recipients: ['#alerts'],
+    signals: [
+      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'2 hours ago', investigation:true, recipients:['#alerts'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Elevated — upstream dependency payment-service is anomalous.' },
+      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'3 days ago', investigation:false, recipients:['#alerts'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range.' },
+      { name:'Latency (P95)', type:'latency', status:'normal', lastAnomaly:'1 week ago', investigation:true, recipients:['#alerts'], chart:'noisy-flat', seasonality:false, sensitivity:'Low sensitivity threshold', desc:'Within expected range.' },
+    ]
+  },
+  {
+    id: 'catalog-service',
+    name: 'catalog-service',
+    type: 'service',
+    status: 'normal',
+    datasets: ['backend-api'],
+    firstSeen: '5 months ago',
+    lastSeen: '2 min ago',
+    env: 'production',
+    recipients: ['#deploys'],
+    signals: [
+      { name:'Error rate', type:'error-rate', status:'normal', lastAnomaly:'4 days ago', investigation:false, recipients:['#deploys'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range.' },
+      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'1 week ago', investigation:true, recipients:['#deploys'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range.' },
+    ]
+  },
+  {
+    id: 'fulfillment-service',
+    name: 'fulfillment-service',
+    type: 'service',
+    status: 'anomalous',
+    datasets: ['backend-api'],
+    firstSeen: '5 months ago',
+    lastSeen: '1 min ago',
+    env: 'production',
+    recipients: ['#alerts', 'jordan@corp.com'],
+    signals: [
+      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'18 mins ago', investigation:false, recipients:['#alerts'], chart:'spike', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'Elevated after recent deploy to catalog-service.' },
+      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'2 days ago', investigation:true, recipients:['#alerts'], chart:'flat', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range.' },
+    ]
+  },
+  {
+    id: 'order-service',
+    name: 'order-service',
+    type: 'service',
+    status: 'anomalous',
+    datasets: ['backend-api'],
+    firstSeen: '6 months ago',
+    lastSeen: 'just now',
+    env: 'production',
+    recipients: ['#on-call'],
+    signals: [
+      { name:'Latency (P95)', type:'latency', status:'anomalous', lastAnomaly:'8 mins ago', investigation:true, recipients:['#on-call'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Elevated — prod-postgres is under load.' },
+      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'2 days ago', investigation:false, recipients:['#on-call'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range.' },
+    ]
+  },
+  // ── ENDPOINTS ─────────────────────────────────────────────────────────
+  // ── HOSTS ──────────────────────────────────────────────────────────────
+  {
+    id: 'prod-host-017',
+    name: 'prod-host-017',
+    type: 'host',
+    status: 'normal',
+    datasets: ['infrastructure'],
+    firstSeen: '8 months ago',
+    lastSeen: '1 min ago',
+    env: 'production',
+    recipients: ['#infra-alerts'],
+    signals: [
+      { name:'CPU usage', type:'cpu', status:'normal', lastAnomaly:'5 days ago', investigation:true, recipients:['#infra-alerts'], chart:'flat', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range.' },
+      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'1 week ago', investigation:false, recipients:['#infra-alerts'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Normal.' },
+    ]
+  },
+];
+
+const signalMeta = {
+  'error-rate':   { color:'#1d4ed8', label:'Error Rate',    legend:[['#1d4ed8','line','Error rate'],['rgba(29,78,216,0.1)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 19 14:10 – 14:15','5 min'],['May 19 13:00 – 13:08','8 min'],['May 18 13:41 – 13:46','5 min']] },
+  'presence':     { color:'#1d4ed8', label:'Presence',      legend:[['#1d4ed8','line','Data'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 19 15:00 – 15:03','3 min']] },
+  'request-rate': { color:'#7c3aed', label:'Request Rate',  legend:[['#7c3aed','line','Request rate'],['rgba(124,58,237,0.1)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 17 09:00 – 09:22','22 min']] },
+  'latency':      { color:'#1d4ed8', label:'Latency (P95)', legend:[['#1d4ed8','line','P95 latency'],['rgba(29,78,216,0.08)','band','Typical range']], anomalies:[] },
+  'cpu':          { color:'#059669', label:'CPU Usage',     legend:[['#059669','line','CPU usage'],['rgba(5,150,105,0.08)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['Jun 1 02:08 – 02:38','30 min']] },
+  'metrics':      { color:'#059669', label:'Metrics',       legend:[['#059669','line','Metric value'],['rgba(5,150,105,0.08)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[] },
+};
+
+const seasonalityNote = 'Seasonality enabled — the typical range accounts for time-of-day and day-of-week patterns. What looks anomalous at 2am might be normal at 2pm.';
+
+let currentSvc = null;
+let currentSig = null;
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  if (screen === 'signal') setTimeout(() => drawFullChart('sig-chart', currentSig), 30);
+}
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+// ── SIGNAL ICONS ──────────────────────────────────────────────────────────
+function sigIcon(sig) {
+  // Off / never configured
+  if (sig.status === 'off' || sig.status === 'never') {
+    return `<svg class="sig-icon" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M4.5 7.5h6" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+  }
+  // Training / hourglass
+  if (sig.status === 'training') {
+    return `<svg class="sig-icon" viewBox="0 0 15 15" fill="none"><path d="M4 2h7M4 13h7M5 2v3l2.5 2.5L5 10v3M10 2v3L7.5 7.5 10 10v3" stroke="#6b7280" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  // Anomalous presence — hourglass in red
+  if (sig.type === 'presence' && sig.status === 'anomalous') {
+    return `<svg class="sig-icon" viewBox="0 0 15 15" fill="none"><path d="M4 2h7M4 13h7M5 2v3l2.5 2.5L5 10v3M10 2v3L7.5 7.5 10 10v3" stroke="#c0392b" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  // Normal presence — checkmark
+  if (sig.type === 'presence' && sig.status === 'normal') {
+    return `<svg class="sig-icon" viewBox="0 0 15 15" fill="none"><path d="M4 7.5l2.5 2.5 4-4.5" stroke="#1a7f4b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  // Anomalous error-rate — warning triangle
+  if (sig.status === 'anomalous') {
+    return `<svg class="sig-icon" viewBox="0 0 15 15" fill="none"><path d="M7.5 2.5L13 12H2L7.5 2.5Z" stroke="#c0392b" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3M7.5 10.5v.5" stroke="#c0392b" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+  }
+  // Normal — checkmark
+  return `<svg class="sig-icon" viewBox="0 0 15 15" fill="none"><path d="M4 7.5l2.5 2.5 4-4.5" stroke="#1a7f4b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function typeTag(type) {
+  const map = { 'error-rate':['sig-type-error-rate','error rate'], 'request-rate':['sig-type-request-rate','request rate'], 'latency':['sig-type-latency','latency p95'], 'presence':['sig-type-presence','presence'], 'cpu':['sig-type-metrics','cpu · metrics'], 'metrics':['sig-type-metrics','metrics'] };
+  const [cls, label] = map[type] || ['',''];
+  return `<span class="signal-type-tag ${cls}">${label}</span>`;
+}
+
+// ── LIST ──────────────────────────────────────────────────────────────────
+function renderList(rows) {
+  const starIcon = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.2 3.5H10L7.2 6.5l1.1 3.5L5.5 8.3l-2.8 1.7 1.1-3.5L1 4.5h3.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
+  document.getElementById('list-body').innerHTML = '<div class="table-card">' + rows.map((svc, si) => {
+    const statusLabel = svc.status === 'off' ? 'Off' : cap(svc.status);
+    const statusBadge = `<span class="badge ${svc.status}">${statusLabel}</span>`;
+    const datasetSub = svc.datasets.map(d => `<span class="ds-pill">${d}</span>`).join('');
+    const svcRow = `
+      <div class="svc-row" onclick="openService(${si})">
+        <div>${statusBadge}</div>
+        <div class="svc-name-cell">
+          <div class="name">${svc.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            ${svc.type !== 'service' ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);font-family:var(--mono)">' + svc.type + '</span>' : ''}
+            ${datasetSub}
+          </div>
+        </div>
+        <div class="recipients-cell">${svc.recipients[0] || ''}</div>
+        <div></div>
+        <div></div>
+      </div>`;
+    const signalRows = svc.signals.map((sig, sigi) => {
+      const isRecent = sig.lastAnomaly.includes('min') || sig.lastAnomaly === 'just now';
+      const lastAnom = sig.lastAnomaly === 'Never detected'
+        ? `<span style="color:var(--text3);font-size:12px">Never detected</span>`
+        : `<span class="last-anom ${isRecent ? 'recent' : ''}">${sig.lastAnomaly}</span>`;
+      const isActive = sig.status !== 'off' && sig.status !== 'training';
+      const viewInvBtn = isActive
+        ? sig.investigation
+          ? `<button class="btn inv" onclick="event.stopPropagation();openSignal(${si},${sigi})">${starIcon} View Investigation</button>`
+          : `<button class="btn" onclick="event.stopPropagation();openSignal(${si},${sigi})">${starIcon} Investigate</button>`
+        : '';
+      const investigateBtn = '';
+      return `
+      <div class="signal-sub-row">
+        <div></div>
+        <div></div>
+        <div class="recipients-cell" style="font-size:12px;color:var(--text3)">${sig.recipients[0] || ''}</div>
+        <div class="sig-name-cell">
+          ${sigIcon(sig)}
+          <span class="sig-link" onclick="event.stopPropagation();openSignal(${si},${sigi})">${sig.name}${sig.seasonality ? '<span class="seasonal-tag">seasonal</span>' : ''}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+          ${lastAnom}
+          <div class="actions-cell">
+            ${viewInvBtn}
+            ${investigateBtn}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="svc-group ${svc.status}">${svcRow}${signalRows}</div>`;
+  }).join('') + '</div>';
+}
+
+function filterList() {
+  const q = (document.getElementById('search-input').value || '').toLowerCase();
+  const rows = q ? services.filter(s => s.name.toLowerCase().includes(q) || s.datasets.some(d => d.includes(q))) : services;
+  renderList(rows);
+}
+
+// ── SERVICE DETAIL ────────────────────────────────────────────────────────
+function openService(si) {
+  currentSvc = services[si];
+  document.getElementById('svc-bc').textContent = currentSvc.name;
+  document.getElementById('svc-title').textContent = currentSvc.name;
+
+  // Meta row: datasets + status + first/last seen
+  document.getElementById('svc-meta').innerHTML = `
+    <div class="svc-meta-item">${currentSvc.datasets.map(d=>`<span class="ds-pill">${d}</span>`).join('')}</div>
+    <div class="svc-meta-item" style="margin-left:4px"><span class="badge ${currentSvc.status}">${cap(currentSvc.status)}</span></div>
+    <div class="svc-meta-item" style="margin-left:8px">First seen <strong>${currentSvc.firstSeen}</strong></div>
+    <div class="svc-meta-item">Last seen <strong>${currentSvc.lastSeen}</strong></div>
+    <div class="svc-meta-item">Environment <strong>${currentSvc.env}</strong></div>
+    <button class="run-query-btn">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2h9v9" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M2 11L11 2" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Run Query
+    </button>`;
+
+  // Main: signal cards
+  const signalCards = currentSvc.signals.length ? currentSvc.signals.map((sig, sigi) => {
+    const isOff = sig.status === 'off';
+    const isTraining = sig.status === 'training';
+    const chartHtml = isOff
+      ? `<div style="height:40px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:4px;margin-bottom:6px;font-size:12px;color:var(--text3)">Signal detection is off</div>`
+      : isTraining
+      ? `<div style="height:40px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:4px;margin-bottom:6px;font-size:12px;color:var(--text3)">Model is training — detection not yet active</div>`
+      : `<canvas class="mini-chart" id="mini-${sigi}" height="40"></canvas>`;
+    const viewSignalHtml = (!isOff && !isTraining) ? `<span class="view-signal">View signal →</span>` : '';
+    return `
+    <div class="signal-card ${sig.status}" onclick="openSignal(${si},${sigi})">
+      <div class="signal-card-header">
+        ${sigIcon(sig)}
+        <span class="signal-card-name">${sig.name}</span>
+        ${typeTag(sig.type)}
+        ${sig.seasonality ? '<span class="seasonal-tag">seasonal</span>' : ''}
+        <span class="badge ${sig.status}" style="margin-left:auto">${cap(sig.status)}</span>
+      </div>
+      <div class="signal-card-body">
+        <div class="signal-card-desc">${sig.desc}</div>
+        ${chartHtml}
+        <div class="signal-card-footer">
+          <span class="signal-card-meta">${sig.lastAnomaly}</span>
+          ${viewSignalHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div style="font-size:13px;color:var(--text3);padding:12px 0">No signals configured for this service yet.</div>`;
+
+  document.getElementById('svc-main').innerHTML = `
+    <div class="section-heading">Signals</div>
+    ${signalCards}`;
+
+  // Sidebar: resource object + explore + recipients
+  document.getElementById('svc-sidebar').innerHTML = `
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Resource</div>
+      <div class="meta-row"><span class="meta-key">Name</span><span class="meta-val">${currentSvc.name}</span></div>
+      <div class="meta-row"><span class="meta-key">Type</span><span class="meta-val">${currentSvc.type || 'service'}</span></div>
+      ${currentSvc.parentService ? '<div class="meta-row"><span class="meta-key">Service</span><span class="meta-val">' + currentSvc.parentService + '</span></div>' : ''}
+      <div class="meta-row"><span class="meta-key">Datasets</span><span class="meta-val">${currentSvc.datasets.join(', ')}</span></div>
+      <div class="meta-row"><span class="meta-key">Environment</span><span class="meta-val">${currentSvc.env}</span></div>
+      <div class="meta-row"><span class="meta-key">First seen</span><span class="meta-val">${currentSvc.firstSeen}</span></div>
+      <div class="meta-row"><span class="meta-key">Last seen</span><span class="meta-val">${currentSvc.lastSeen}</span></div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Explore</div>
+      <div class="explore-row">
+        <div><div class="explore-row-name">Traces</div><div class="explore-row-desc">All traces for ${currentSvc.name}</div></div>
+        <span class="explore-arrow">→</span>
+      </div>
+      <div class="explore-row">
+        <div><div class="explore-row-name">Query</div><div class="explore-row-desc">Open in Query Builder</div></div>
+        <span class="explore-arrow">→</span>
+      </div>
+      ${currentSvc.type !== 'endpoint' ? '<div class="explore-row"><div><div class="explore-row-name">Dependencies</div><div class="explore-row-desc">What calls ' + currentSvc.name + ' and what it calls</div></div><span class="explore-arrow">→</span></div>' : ''}
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Recipients</div>
+      ${currentSvc.recipients.length ? currentSvc.recipients.map(r=>`<div class="recip-row"><span class="recip-name">${r}</span></div>`).join('') : '<div style="font-size:13px;color:var(--text3)">No recipients configured</div>'}
+    </div>`;
+
+  goTo('service');
+  setTimeout(() => currentSvc.signals.forEach((sig, i) => { if (sig.status !== "off" && sig.status !== "training") drawMiniChart(`mini-${i}`, sig); }), 20);
+}
+
+// ── SIGNAL DETAIL ─────────────────────────────────────────────────────────
+function openSignal(si, sigi) {
+  currentSvc = services[si];
+  currentSig = currentSvc.signals[sigi];
+  const m = signalMeta[currentSig.type] || signalMeta['error-rate'];
+
+  document.getElementById('sig-bc-svc').textContent = currentSvc.name;
+  document.getElementById('sig-bc-signal').textContent = currentSig.name;
+  document.getElementById('sig-title').textContent = currentSvc.name;
+  document.getElementById('sig-subtitle').textContent = `${currentSig.name} · ${currentSvc.datasets.join(', ')} · May 19 2026 · 14:29 – 16:29 UTC`;
+
+  const legendHtml = m.legend.map(([color,type,label]) => `<div class="legend-item"><div class="legend-${type}" style="background:${color}"></div>${label}</div>`).join('');
+  const anomalyRows = m.anomalies.map(([time,dur]) => `
+    <tr>
+      <td style="font-family:var(--mono)">${time}</td>
+      <td>${dur}</td>
+      <td>
+        <div class="vote-group">
+          <span class="vote-btn yes"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 2 6.5 2C7.5 2 8 3 8 3L8 5H11C11.5 5 12 5.5 11.8 6L10.5 10.5C10.3 11 9.8 11 9.5 11H5C4.5 11 4 10.5 4 10V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V11" stroke="currentColor" stroke-width="1.2"/></svg> Yes</span>
+          <span class="vote-btn no"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 11 6.5 11C7.5 11 8 10 8 10L8 8H11C11.5 8 12 7.5 11.8 7L10.5 2.5C10.3 2 9.8 2 9.5 2H5C4.5 2 4 2.5 4 3V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V2" stroke="currentColor" stroke-width="1.2"/></svg> No</span>
+          <span class="vote-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 7.5V8M6.5 4.5C6.5 4.5 7.5 4.5 7.5 5.5C7.5 6.3 6.5 6.5 6.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Unsure</span>
+        </div>
+      </td>
+      <td style="text-align:right"><button class="invest-row-btn"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.2 3.5H10L7.2 6.5l1.1 3.5L5.5 8.3l-2.8 1.7 1.1-3.5L1 4.5h3.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg> Investigate</button></td>
+    </tr>`).join('');
+
+  const isOff = currentSig.status === 'off';
+  const isTraining = currentSig.status === 'training';
+  const chartSection = (isOff || isTraining) ? `
+      <div class="chart-card">
+        <div style="height:110px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:4px;font-size:13px;color:var(--text3)">
+          ${isTraining ? 'Model is training — detection not yet active' : 'Signal detection is off'}
+        </div>
+      </div>` : `
+      <div class="chart-card">
+        <div class="chart-sensitivity">${currentSig.sensitivity} <button class="change-btn">Change</button></div>
+        <div class="chart-legend">${legendHtml}</div>
+        <canvas id="sig-chart" height="110" style="width:100%;display:block"></canvas>
+        ${currentSig.seasonality ? `<div class="seasonality-callout">${seasonalityNote}</div>` : ''}
+      </div>`;
+
+  const anomalySection = (isOff || isTraining) ? '' : `
+      <div class="anomaly-history-card">
+        <div class="card-title">Anomalies</div>
+        ${(m.anomalies.length && currentSig.status === 'anomalous') ? `<table class="anom-table"><thead><tr><th>Time ▾</th><th>Approximate duration</th><th>Is this a valid anomaly?</th><th></th></tr></thead><tbody>${anomalyRows}</tbody></table><div class="anom-paginate"><span class="anom-showing">Showing <select><option>1-25</option><option>1-10</option></select> of 32</span><div class="anom-page-btn">‹</div><div class="anom-page-btn active">1</div><div class="anom-page-btn">4</div><span style="color:var(--text3)">···</span><div class="anom-page-btn">›</div></div>` : '<div style="font-size:13px;color:var(--text3)">No anomalies detected in this time range</div>'}
+      </div>`;
+
+  document.getElementById('signal-body').innerHTML = `
+    <div>
+      ${chartSection}
+      <div class="auto-invest-card">
+        <div class="card-title" style="margin-bottom:12px">Automatic investigation <span class="new-badge">New</span></div>
+        <div class="toggle-row">
+          <div class="toggle ${(currentSig.status === 'off') ? 'off' : 'on'}"></div>
+          <div class="invest-text">Automatically start a Canvas investigation when an anomaly is detected.<br><span style="color:var(--text3)">If a Slack channel is configured as a recipient, the Honeycomb Canvas app will join the thread and provide AI-powered insights directly there.</span></div>
+        </div>
+      </div>
+      ${anomalySection}
+      <div class="recipients-card">
+        <div class="card-title" style="margin-bottom:8px">Recipients</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:14px">Every recipient on this list will be notified, unless they are muted. Slack and Pagerduty must be configured in the <span style="text-decoration:underline;cursor:pointer">Integration Center</span> before they can be added here.</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="add-recip-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg> Add Recipient</button>
+          <button class="integ-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg> Integration Center</button>
+        </div>
+        <div class="recip-row" style="padding-bottom:6px;border-bottom:1px solid var(--border)">
+          <span class="recip-provider" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Provider</span>
+          <span class="recip-recipient" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Recipient</span>
+          <span class="recip-severity" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Severity</span>
+          <span class="recip-mute" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Mute</span>
+          <span style="width:60px"></span>
+        </div>
+        ${currentSvc.recipients.map(r => {
+          const isPagerduty = r.includes('@') || r === '#on-call';
+          const providerIcon = isPagerduty
+            ? '<span style="font-size:12px;font-weight:600;color:#06ac38;border:1px solid #06ac38;border-radius:2px;padding:0 3px">P</span>'
+            : '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5l5.5 3.5L12 5" stroke="currentColor" stroke-width="1.2"/></svg>';
+          const providerName = isPagerduty ? 'Pagerduty' : 'Email/Slack';
+          return '<div class="recip-row"><span class="recip-provider">' + providerIcon + ' ' + providerName + '</span><span class="recip-recipient">' + r + '</span><span class="recip-severity">Critical</span><span class="recip-mute"><div class="toggle-sm off"></div></span><span class="recip-actions" style="width:60px;justify-content:flex-end"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 12l2-2 7-7-2-2-7 7-2 2zM10 3l1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 4h8M5 4V3h4v1M6 6v4M8 6v4M4 4l.5 7h5l.5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
+        }).join('')}
+      </div>
+    </div>
+    <div><!-- right col placeholder for future --></div>`;
+
+  if (!isOff && !isTraining) setTimeout(() => drawFullChart('sig-chart', currentSig), 30);
+  goTo('signal');
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────
+const chartColors = { 'error-rate':'#1d4ed8','request-rate':'#7c3aed','latency':'#1d4ed8','presence':'#1d4ed8','cpu':'#059669','metrics':'#059669' };
+const bandColors  = { 'error-rate':'rgba(29,78,216,0.08)','request-rate':'rgba(124,58,237,0.08)','latency':'rgba(29,78,216,0.08)','presence':'rgba(0,0,0,0.03)','cpu':'rgba(5,150,105,0.08)','metrics':'rgba(5,150,105,0.08)' };
+
+function _drawChart(ctx, W, H, sig, isFull) {
+  ctx.clearRect(0, 0, W, H);
+  const pts = 80;
+  const lineColor = chartColors[sig.type] || '#1d4ed8';
+  const bandColor = bandColors[sig.type] || 'rgba(29,78,216,0.08)';
+  const type = sig.chart;
+
+  const data = Array.from({length:pts}, (_,i) => {
+    if (type==='spike') { let v=0.22+Math.random()*0.1; if(i>55&&i<63) v=0.74+Math.random()*0.2; return v; }
+    if (type==='drop') { let v=0.65+Math.random()*0.08; if(i>55) v=0.06+Math.random()*0.05; return v; }
+    if (type==='presence-ok') return 0.85+Math.random()*0.08;
+    if (type==='presence-gap') { if(i>48&&i<58) return 0; return 0.85+Math.random()*0.08; }
+    if (type==='noisy-flat') return 0.4+Math.random()*0.28;
+    return 0.35+Math.random()*0.12;
+  });
+
+  // Band — wavy if seasonal
+  if (sig.seasonality) {
+    ctx.fillStyle = bandColor;
+    ctx.beginPath();
+    const upper = Array.from({length:pts}, (_,i) => 0.5+0.04*Math.sin(i*0.2));
+    const lower = Array.from({length:pts}, (_,i) => 0.08+0.02*Math.sin(i*0.2));
+    upper.forEach((v,i) => { const x=i/(pts-1)*W,y=H*(1-v); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    lower.slice().reverse().forEach((v,i) => { const x=(pts-1-i)/(pts-1)*W,y=H*(1-v); ctx.lineTo(x,y); });
+    ctx.closePath(); ctx.fill();
+  } else {
+    ctx.fillStyle = bandColor; ctx.fillRect(0, H*0.1, W, H*0.55);
+  }
+
+  // Anomaly highlight — only when anomalous
+  if (sig.status === 'anomalous') {
+    if (type==='spike') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*55/pts,0,W*8/pts,H); }
+    if (type==='drop') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*55/pts,0,W*44/pts,H); }
+    if (type==='presence-gap') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*48/pts,0,W*10/pts,H); }
+  }
+
+  // Line
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.beginPath();
+  data.forEach((v,i) => { const x=i/(pts-1)*W, y=H*(1-v*0.92); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.stroke();
+
+  // Anomaly markers — only when anomalous
+  if (sig.status === 'anomalous') {
+    if (type==='spike') {
+      const ax=59/pts*W, ay=H*(1-data[59]*0.92);
+      ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(ax,ay-6); ctx.lineTo(ax-3,ay-11); ctx.lineTo(ax+3,ay-11); ctx.closePath(); ctx.fill();
+    }
+    if (type==='drop') {
+      const ax=57/pts*W, ay=H*(1-data[57]*0.92);
+      ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(ax,ay+6); ctx.lineTo(ax-3,ay+11); ctx.lineTo(ax+3,ay+11); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  // X axis labels (full chart only)
+  if (isFull) {
+    ctx.fillStyle='rgba(0,0,0,0.28)'; ctx.font='10px "IBM Plex Mono"'; ctx.textAlign='center';
+    ['14:30','14:45','15:00','15:15','15:30','15:45','16:00','16:15'].forEach((t,i,arr) => {
+      ctx.fillText(t, i/(arr.length-1)*W, H-2);
+    });
+  }
+}
+
+function drawMiniChart(id, sig) {
+  const canvas = document.getElementById(id); if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth, H = 40;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  _drawChart(ctx, W, H, sig, false);
+}
+
+function drawFullChart(id, sig) {
+  const canvas = document.getElementById(id); if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth, H = 110;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  _drawChart(ctx, W, H, sig, true);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+renderList(services);
+window.addEventListener('resize', () => {
+  const a = document.querySelector('.screen.active');
+  if (a?.id==='screen-signal' && currentSig && currentSig.status !== 'off' && currentSig.status !== 'training') drawFullChart('sig-chart', currentSig);
+  if (a?.id==='screen-service' && currentSvc) currentSvc.signals.forEach((sig,i) => { if (sig.status !== 'off' && sig.status !== 'training') drawMiniChart(`mini-${i}`, sig); });
+});
+</script>
+</body>
+</html>
