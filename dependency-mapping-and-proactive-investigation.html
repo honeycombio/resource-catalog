@@ -134,7 +134,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 .explore-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 6px; cursor: pointer; background: var(--bg2); gap: 10px; transition: background 0.1s; }
 .explore-item:hover { background: var(--bg3); border-color: var(--border2); }
-.explore-icon { width: 28px; height: 28px; border-radius: 5px; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.explore-icon { width: 28px; height: 28px; border-radius: 5px; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; }
 .explore-name { font-size: 13px; font-weight: 500; }
 .explore-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
 .explore-arrow { font-size: 13px; color: var(--blue); margin-left: auto; }
@@ -185,14 +185,20 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .drill-link { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 5px; border: 1px solid var(--border); margin-bottom: 6px; cursor: pointer; background: var(--bg3); transition: background 0.1s; }
 .drill-link:last-child { margin-bottom: 0; }
 .drill-link:hover { background: var(--bg4); border-color: var(--border2); }
-.drill-link-icon { width: 26px; height: 26px; border-radius: 4px; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.drill-link-icon { width: 26px; height: 26px; border-radius: 4px; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; }
 .drill-link-name { font-size: 13px; font-weight: 500; color: var(--text); }
 .drill-link-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
 .drill-link-arrow { font-size: 13px; color: var(--blue); margin-left: auto; }
+
+/* Milestone banner */
+.milestone-banner { position: fixed; top: 0; left: 0; right: 0; height: 44px; background: #1e1b4b; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; z-index: 1000; font-family: 'IBM Plex Sans', sans-serif; }
+
 </style>
 </head>
 <body>
-<div class="app">
+
+<div class="milestone-banner"><a href="Auto-Discovered-Resources-and-Anomaly-Status.html" style="color:#ffffff;font-size:13px;text-decoration:none;font-weight:400;white-space:nowrap;flex-shrink:0">← Milestone: Auto-Discovered Resources</a><span style="position:absolute;left:50%;transform:translateX(-50%);color:#ffffff;font-size:15px;font-weight:500;white-space:nowrap;pointer-events:none">Milestone: Auto-Discovered Resources by Anomaly Health + Dependency Mapping</span><span style="color:transparent;font-size:13px;white-space:nowrap;flex-shrink:0;pointer-events:none">placeholder →</span></div>
+<div class="app" style="margin-top:44px">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
