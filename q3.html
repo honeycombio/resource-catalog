@@ -128,7 +128,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .signal-type-tag { display: inline-flex; height: 17px; padding: 0 6px; border-radius: 3px; font-size: 10px; font-weight: 500; align-items: center; }
 .sig-type-error-rate { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
 .sig-type-request-rate { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
-.sig-type-latency { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+.sig-type-latency { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
 .sig-type-presence { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
 .view-signal { font-size: 12px; color: var(--blue); cursor: pointer; }
 .view-signal:hover { text-decoration: underline; }
@@ -381,7 +381,7 @@ const signalMeta = {
   'error-rate':   { color:'#1d4ed8', label:'Error Rate',    legend:[['#1d4ed8','line','Error rate'],['rgba(29,78,216,0.1)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 19 14:10 – 14:15','5 min'],['May 19 13:00 – 13:08','8 min'],['May 18 13:41 – 13:46','5 min']] },
   'presence':     { color:'#1d4ed8', label:'Presence',      legend:[['#1d4ed8','line','Data'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 19 15:00 – 15:03','3 min']] },
   'request-rate': { color:'#7c3aed', label:'Request Rate',  legend:[['#7c3aed','line','Request rate'],['rgba(124,58,237,0.1)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 17 09:00 – 09:22','22 min']] },
-  'latency':      { color:'#ea580c', label:'Latency (P95)', legend:[['#ea580c','line','P95 latency'],['rgba(234,88,12,0.1)','band','Typical range'],['rgba(192,57,43,0.2)','band','Anomaly detected']], anomalies:[['May 15 14:30 – 15:00','30 min']] },
+  'latency':      { color:'#1d4ed8', label:'Latency (P95)', legend:[['#1d4ed8','line','P95 latency'],['rgba(29,78,216,0.08)','band','Typical range']], anomalies:[] },
 };
 
 const seasonalityNote = 'Seasonality enabled — the typical range accounts for time-of-day and day-of-week patterns. What looks anomalous at 2am might be normal at 2pm.';
@@ -636,8 +636,8 @@ function openSignal(si, sigi) {
 }
 
 // ── CHARTS ────────────────────────────────────────────────────────────────
-const chartColors = { 'error-rate':'#1d4ed8','request-rate':'#7c3aed','latency':'#ea580c','presence':'#1d4ed8' };
-const bandColors  = { 'error-rate':'rgba(29,78,216,0.08)','request-rate':'rgba(124,58,237,0.08)','latency':'rgba(234,88,12,0.08)','presence':'rgba(0,0,0,0.03)' };
+const chartColors = { 'error-rate':'#1d4ed8','request-rate':'#7c3aed','latency':'#1d4ed8','presence':'#1d4ed8' };
+const bandColors  = { 'error-rate':'rgba(29,78,216,0.08)','request-rate':'rgba(124,58,237,0.08)','latency':'rgba(29,78,216,0.08)','presence':'rgba(0,0,0,0.03)' };
 
 function _drawChart(ctx, W, H, sig, isFull) {
   ctx.clearRect(0, 0, W, H);
@@ -668,10 +668,12 @@ function _drawChart(ctx, W, H, sig, isFull) {
     ctx.fillStyle = bandColor; ctx.fillRect(0, H*0.1, W, H*0.55);
   }
 
-  // Anomaly highlight
-  if (type==='spike') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*55/pts,0,W*8/pts,H); }
-  if (type==='drop') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*55/pts,0,W*44/pts,H); }
-  if (type==='presence-gap') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*48/pts,0,W*10/pts,H); }
+  // Anomaly highlight — only when anomalous
+  if (sig.status === 'anomalous') {
+    if (type==='spike') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*55/pts,0,W*8/pts,H); }
+    if (type==='drop') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*55/pts,0,W*44/pts,H); }
+    if (type==='presence-gap') { ctx.fillStyle='rgba(192,57,43,0.08)'; ctx.fillRect(W*48/pts,0,W*10/pts,H); }
+  }
 
   // Line
   ctx.strokeStyle = lineColor;
@@ -679,14 +681,16 @@ function _drawChart(ctx, W, H, sig, isFull) {
   data.forEach((v,i) => { const x=i/(pts-1)*W, y=H*(1-v*0.92); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
   ctx.stroke();
 
-  // Anomaly marker
-  if (type==='spike') {
-    const ax=59/pts*W, ay=H*(1-data[59]*0.92);
-    ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(ax,ay-6); ctx.lineTo(ax-3,ay-11); ctx.lineTo(ax+3,ay-11); ctx.closePath(); ctx.fill();
-  }
-  if (type==='drop') {
-    const ax=57/pts*W, ay=H*(1-data[57]*0.92);
-    ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(ax,ay+6); ctx.lineTo(ax-3,ay+11); ctx.lineTo(ax+3,ay+11); ctx.closePath(); ctx.fill();
+  // Anomaly markers — only when anomalous
+  if (sig.status === 'anomalous') {
+    if (type==='spike') {
+      const ax=59/pts*W, ay=H*(1-data[59]*0.92);
+      ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(ax,ay-6); ctx.lineTo(ax-3,ay-11); ctx.lineTo(ax+3,ay-11); ctx.closePath(); ctx.fill();
+    }
+    if (type==='drop') {
+      const ax=57/pts*W, ay=H*(1-data[57]*0.92);
+      ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(ax,ay+6); ctx.lineTo(ax-3,ay+11); ctx.lineTo(ax+3,ay+11); ctx.closePath(); ctx.fill();
+    }
   }
 
   // X axis labels (full chart only)
