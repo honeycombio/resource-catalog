@@ -188,6 +188,29 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .recip-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; gap: 10px; }
 .recip-row:last-child { border-bottom: none; }
 .recip-name { flex: 1; color: var(--text2); }
+.recip-actions { display: flex; gap: 8px; color: var(--text3); margin-left: auto; }
+.recip-actions svg { cursor: pointer; }
+.recip-actions svg:hover { color: var(--text2); }
+.recip-provider { width: 140px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.recip-recipient { flex: 1; color: var(--text2); }
+.recip-severity { width: 80px; color: var(--text2); }
+.recip-mute { width: 60px; }
+.toggle-sm { width: 34px; height: 19px; border-radius: 10px; flex-shrink: 0; position: relative; cursor: pointer; }
+.toggle-sm.on { background: var(--green); }
+.toggle-sm.off { background: var(--bg4); }
+.toggle-sm::after { content:""; position: absolute; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; }
+.toggle-sm.on::after { right: 2px; left: auto; }
+.toggle-sm.off::after { left: 2px; }
+.anom-paginate { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--text3); }
+.anom-page-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); }
+.anom-page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.anom-showing { display: flex; align-items: center; gap: 4px; }
+.anom-showing select { height: 24px; border: 1px solid var(--border2); border-radius: 4px; font-size: 12px; padding: 0 4px; background: var(--bg2); color: var(--text2); }
+.invest-row-btn { height: 27px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); font-size: 12px; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: var(--font); }
+.invest-row-btn:hover { background: var(--bg3); }
+.add-recip-btn { height: 30px; padding: 0 14px; background: var(--blue); border: none; border-radius: 6px; font-size: 13px; color: #fff; cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; }
+.integ-btn { height: 30px; padding: 0 12px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; font-size: 13px; color: var(--text2); cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; }
+.recip-name { flex: 1; color: var(--text2); }
 
 /* Ask canvas floating */
 .ask-canvas { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--bg2); border: 1.5px solid var(--blue-border); border-radius: 20px; font-size: 13px; color: var(--blue); cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.08); z-index: 100; white-space: nowrap; }
@@ -313,10 +336,10 @@ const services = [
     env: 'production',
     recipients: ['#alerts', '+2 more'],
     signals: [
-      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'2 hours ago', recipients:['#alerts +2 more'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Spiking since 02:14am — 11 minutes.' },
-      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'1 hour ago', recipients:['#alerts +2 more'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Receiving telemetry normally.' },
-      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'3 days ago', recipients:['#alerts +2 more'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range for this time of day.' },
-      { name:'Latency (P95)', type:'latency', status:'normal', lastAnomaly:'5 days ago', recipients:['#alerts +2 more'], chart:'noisy-flat', seasonality:false, sensitivity:'Low sensitivity threshold', desc:'Within expected range.' },
+      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'2 hours ago', investigation:true, recipients:['#alerts +2 more'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Spiking since 02:14am — 11 minutes.' },
+      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'1 hour ago', investigation:false, recipients:['#alerts +2 more'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Receiving telemetry normally.' },
+      { name:'Request rate', type:'request-rate', status:'normal', lastAnomaly:'3 days ago', investigation:true, recipients:['#alerts +2 more'], chart:'flat', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Within expected range for this time of day.' },
+      { name:'Latency (P95)', type:'latency', status:'normal', lastAnomaly:'5 days ago', investigation:false, recipients:['#alerts +2 more'], chart:'noisy-flat', seasonality:false, sensitivity:'Low sensitivity threshold', desc:'Within expected range.' },
     ]
   },
   {
@@ -329,7 +352,7 @@ const services = [
     env: 'production',
     recipients: ['anne.omalie@corp.com', '#alerts'],
     signals: [
-      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'20 mins ago', recipients:['anne.omalie@corp.com', '#alerts'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Elevated since 02:11am.' },
+      { name:'Error rate', type:'error-rate', status:'anomalous', lastAnomaly:'20 mins ago', investigation:true, recipients:['anne.omalie@corp.com', '#alerts'], chart:'spike', seasonality:true, sensitivity:'Medium sensitivity threshold (default)', desc:'Elevated since 02:11am.' },
       { name:'Presence', type:'presence', status:'training', lastAnomaly:'Never detected', recipients:['anne.omalie@corp.com', '#alerts'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Model is training — detection not yet active.' },
     ]
   },
@@ -343,8 +366,8 @@ const services = [
     env: 'production',
     recipients: ['#alerts'],
     signals: [
-      { name:'Error rate', type:'error-rate', status:'off', lastAnomaly:'Never detected', recipients:['#alerts'], chart:'flat', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'No anomalies ever detected.' },
-      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'4 days ago', recipients:['#alerts'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Data present and healthy.' },
+      { name:'Error rate', type:'error-rate', status:'off', lastAnomaly:'Never detected', investigation:false, recipients:['#alerts'], chart:'flat', seasonality:false, sensitivity:'Medium sensitivity threshold (default)', desc:'No anomalies ever detected.' },
+      { name:'Presence', type:'presence', status:'normal', lastAnomaly:'4 days ago', investigation:true, recipients:['#alerts'], chart:'presence-ok', seasonality:false, sensitivity:'Sensitivity threshold: 5 minutes', desc:'Data present and healthy.' },
     ]
   },
   {
@@ -453,10 +476,13 @@ function renderList(rows) {
       const lastAnom = sig.lastAnomaly === 'Never detected'
         ? `<span style="color:var(--text3);font-size:12px">Never detected</span>`
         : `<span class="last-anom ${isRecent ? 'recent' : ''}">${sig.lastAnomaly}</span>`;
-      const viewInvBtn = sig.status === 'anomalous'
-        ? `<button class="btn inv" onclick="event.stopPropagation();openSignal(${si},${sigi})">${starIcon} View Investigation</button>` : '';
-      const investigateBtn = sig.status === 'anomalous'
-        ? `<button class="btn" onclick="event.stopPropagation();openSignal(${si},${sigi})">${starIcon} Investigate</button>` : '';
+      const isActive = sig.status !== 'off' && sig.status !== 'training';
+      const viewInvBtn = isActive
+        ? sig.investigation
+          ? `<button class="btn inv" onclick="event.stopPropagation();openSignal(${si},${sigi})">${starIcon} View Investigation</button>`
+          : `<button class="btn" onclick="event.stopPropagation();openSignal(${si},${sigi})">${starIcon} Investigate</button>`
+        : '';
+      const investigateBtn = '';
       return `
       <div class="signal-sub-row">
         <div></div>
@@ -588,7 +614,14 @@ function openSignal(si, sigi) {
     <tr>
       <td style="font-family:var(--mono)">${time}</td>
       <td>${dur}</td>
-      <td><div class="vote-group"><span class="vote-btn yes">Yes</span><span class="vote-btn no">No</span><span class="vote-btn">Unsure</span></div></td>
+      <td>
+        <div class="vote-group">
+          <span class="vote-btn yes"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 2 6.5 2C7.5 2 8 3 8 3L8 5H11C11.5 5 12 5.5 11.8 6L10.5 10.5C10.3 11 9.8 11 9.5 11H5C4.5 11 4 10.5 4 10V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V11" stroke="currentColor" stroke-width="1.2"/></svg> Yes</span>
+          <span class="vote-btn no"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 11 6.5 11C7.5 11 8 10 8 10L8 8H11C11.5 8 12 7.5 11.8 7L10.5 2.5C10.3 2 9.8 2 9.5 2H5C4.5 2 4 2.5 4 3V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V2" stroke="currentColor" stroke-width="1.2"/></svg> No</span>
+          <span class="vote-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 7.5V8M6.5 4.5C6.5 4.5 7.5 4.5 7.5 5.5C7.5 6.3 6.5 6.5 6.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Unsure</span>
+        </div>
+      </td>
+      <td style="text-align:right"><button class="invest-row-btn"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.2 3.5H10L7.2 6.5l1.1 3.5L5.5 8.3l-2.8 1.7 1.1-3.5L1 4.5h3.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg> Investigate</button></td>
     </tr>`).join('');
 
   const isOff = currentSig.status === 'off';
@@ -609,24 +642,42 @@ function openSignal(si, sigi) {
   const anomalySection = (isOff || isTraining) ? '' : `
       <div class="anomaly-history-card">
         <div class="card-title">Anomalies</div>
-        ${m.anomalies.length ? `<table class="anom-table"><thead><tr><th>Time</th><th>Duration</th><th>Valid?</th></tr></thead><tbody>${anomalyRows}</tbody></table>` : '<div style="font-size:13px;color:var(--text3)">No anomalies detected in this time range</div>'}
+        ${(m.anomalies.length && currentSig.status === 'anomalous') ? `<table class="anom-table"><thead><tr><th>Time ▾</th><th>Approximate duration</th><th>Is this a valid anomaly?</th><th></th></tr></thead><tbody>${anomalyRows}</tbody></table><div class="anom-paginate"><span class="anom-showing">Showing <select><option>1-25</option><option>1-10</option></select> of 32</span><div class="anom-page-btn">‹</div><div class="anom-page-btn active">1</div><div class="anom-page-btn">4</div><span style="color:var(--text3)">···</span><div class="anom-page-btn">›</div></div>` : '<div style="font-size:13px;color:var(--text3)">No anomalies detected in this time range</div>'}
       </div>`;
 
   document.getElementById('signal-body').innerHTML = `
     <div>
       ${chartSection}
-      ${anomalySection}
       <div class="auto-invest-card">
         <div class="card-title" style="margin-bottom:12px">Automatic investigation <span class="new-badge">New</span></div>
         <div class="toggle-row">
-          <div class="toggle off"></div>
+          <div class="toggle ${(currentSig.status === 'off') ? 'off' : 'on'}"></div>
           <div class="invest-text">Automatically start a Canvas investigation when an anomaly is detected.<br><span style="color:var(--text3)">If a Slack channel is configured as a recipient, the Honeycomb Canvas app will join the thread and provide AI-powered insights directly there.</span></div>
         </div>
       </div>
+      ${anomalySection}
       <div class="recipients-card">
         <div class="card-title" style="margin-bottom:8px">Recipients</div>
-        <div style="font-size:13px;color:var(--text3);margin-bottom:12px">Every recipient on this list will be notified, unless they are muted.</div>
-        ${currentSvc.recipients.map(r=>`<div class="recip-row"><span class="recip-name">${r}</span><span style="font-size:12px;color:var(--text3)">Critical</span></div>`).join('')}
+        <div style="font-size:13px;color:var(--text3);margin-bottom:14px">Every recipient on this list will be notified, unless they are muted. Slack and Pagerduty must be configured in the <span style="text-decoration:underline;cursor:pointer">Integration Center</span> before they can be added here.</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="add-recip-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg> Add Recipient</button>
+          <button class="integ-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg> Integration Center</button>
+        </div>
+        <div class="recip-row" style="padding-bottom:6px;border-bottom:1px solid var(--border)">
+          <span class="recip-provider" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Provider</span>
+          <span class="recip-recipient" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Recipient</span>
+          <span class="recip-severity" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Severity</span>
+          <span class="recip-mute" style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Mute</span>
+          <span style="width:60px"></span>
+        </div>
+        ${currentSvc.recipients.map(r => {
+          const isPagerduty = r.includes('@') || r === '#on-call';
+          const providerIcon = isPagerduty
+            ? '<span style="font-size:12px;font-weight:600;color:#06ac38;border:1px solid #06ac38;border-radius:2px;padding:0 3px">P</span>'
+            : '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5l5.5 3.5L12 5" stroke="currentColor" stroke-width="1.2"/></svg>';
+          const providerName = isPagerduty ? 'Pagerduty' : 'Email/Slack';
+          return '<div class="recip-row"><span class="recip-provider">' + providerIcon + ' ' + providerName + '</span><span class="recip-recipient">' + r + '</span><span class="recip-severity">Critical</span><span class="recip-mute"><div class="toggle-sm off"></div></span><span class="recip-actions" style="width:60px;justify-content:flex-end"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 12l2-2 7-7-2-2-7 7-2 2zM10 3l1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 4h8M5 4V3h4v1M6 6v4M8 6v4M4 4l.5 7h5l.5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
+        }).join('')}
       </div>
     </div>
     <div><!-- right col placeholder for future --></div>`;
