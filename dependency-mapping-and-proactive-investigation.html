@@ -8,7 +8,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f5f4f1; --bg2: #ffffff; --bg3: #f0eeeb; --bg4: #e8e6e2;
+  --bg: #f7f8fa; --bg2: #ffffff; --bg3: #f0f2f5; --bg4: #e4e7ec;
   --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
   --text: #1a1a1a; --text2: #4a4a4a; --text3: #8a8a8a;
   --red: #c0392b; --red-bg: rgba(192,57,43,0.07); --red-border: rgba(192,57,43,0.2);
@@ -156,27 +156,22 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 /* ═══════════════════════════
    SCREEN 3 — SIGNAL DETAIL
 ═══════════════════════════ */
-.signal-detail-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; flex-shrink: 0; background: var(--bg2); }
+.signal-detail-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); display: flex; align-items: flex-start; gap: 12px; }
 .sdh-info { flex: 1; }
-.sdh-title { font-size: 18px; font-weight: 600; margin-bottom: 3px; }
-.sdh-meta { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.signal-detail-title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
+.signal-detail-subtitle { font-size: 13px; color: var(--text3); font-family: var(--mono); }
 .run-query-btn { padding: 7px 14px; background: var(--blue-bg); border: 1px solid var(--blue-border); border-radius: 4px; font-size: 13px; color: var(--blue); cursor: pointer; white-space: nowrap; }
-.sensitivity-row { padding: 8px 20px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; background: var(--bg3); flex-shrink: 0; }
+.sensitivity-row { display: none; }
 .change-link { color: var(--blue); cursor: pointer; font-size: 12px; }
-.signal-detail-body { flex: 1; overflow-y: auto; padding: 20px; background: var(--bg); display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-content: start; }
+.signal-detail-body { flex: 1; overflow-y: auto; padding: 20px 24px; background: var(--bg); display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-content: start; }
 .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
-.chart-legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 6px; }
 .legend-line { height: 2px; width: 20px; border-radius: 1px; }
 .legend-band { height: 8px; width: 20px; border-radius: 2px; }
 .anomaly-table { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--bg2); margin-top: 8px; }
-.at-head { display: grid; grid-template-columns: 2fr 1fr 1.5fr; padding: 7px 14px; background: var(--bg3); border-bottom: 1px solid var(--border); }
-.at-row { display: grid; grid-template-columns: 2fr 1fr 1.5fr; padding: 11px 14px; border-bottom: 1px solid var(--border); align-items: center; }
+
 .at-row:last-child { border-bottom: none; }
 .vote-group { display: flex; gap: 8px; }
-.vote-btn { font-size: 12px; color: var(--text3); cursor: pointer; padding: 2px 7px; border-radius: 3px; border: 1px solid transparent; }
-.vote-btn.yes:hover { border-color: var(--green-border); color: var(--green); }
-.vote-btn.no:hover { border-color: var(--red-border); color: var(--red); }
 .vote-btn.unsure:hover { border-color: var(--border2); color: var(--text2); }
 .signal-right { display: flex; flex-direction: column; gap: 16px; }
 .signal-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
@@ -190,8 +185,94 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .drill-link-desc { font-size: 11px; color: var(--text3); margin-top: 1px; }
 .drill-link-arrow { font-size: 13px; color: var(--blue); margin-left: auto; }
 
-/* Milestone banner */
+
 .milestone-banner { position: fixed; top: 0; left: 0; right: 0; height: 44px; background: #1e1b4b; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; z-index: 1000; font-family: 'IBM Plex Sans', sans-serif; }
+
+
+
+.chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+.chart-sensitivity { font-size: 13px; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.change-btn { height: 24px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); font-size: 12px; color: var(--text2); cursor: pointer; font-family: var(--font); }
+.chart-legend { display: flex; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-line { height: 2px; width: 18px; border-radius: 1px; }
+.legend-band { height: 8px; width: 18px; border-radius: 2px; }
+.seasonality-callout { margin-top: 12px; background: var(--blue-bg); border: 1px solid var(--blue-border); border-radius: 6px; padding: 9px 12px; font-size: 12px; color: var(--blue); line-height: 1.6; }
+.anomaly-history-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+.card-title { font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+.anom-table { width: 100%; border-collapse: collapse; }
+.anom-table th { font-size: 11px; font-weight: 500; color: var(--text3); text-align: left; padding: 0 0 8px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+.anom-table td { font-size: 13px; color: var(--text2); padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); vertical-align: middle; }
+.anom-table tr:last-child td { border-bottom: none; }
+.vote-btn { font-size: 12px; color: var(--text3); cursor: pointer; padding: 2px 8px; border-radius: 4px; border: 1px solid transparent; }
+.vote-btn.yes:hover { border-color: var(--green-border); color: var(--green); }
+.vote-btn.no:hover { border-color: var(--red-border); color: var(--red); }
+.vote-btn:hover { border-color: var(--border2); color: var(--text2); }
+.auto-invest-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+.toggle-row { display: flex; align-items: flex-start; gap: 10px; }
+.toggle { width: 34px; height: 19px; border-radius: 10px; flex-shrink: 0; position: relative; cursor: pointer; margin-top: 2px; }
+.toggle.on { background: var(--green); }
+.toggle.off { background: var(--bg4); }
+.toggle::after { content:''; position: absolute; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: left 0.15s; }
+.toggle.on::after { right: 2px; left: auto; }
+.toggle.off::after { left: 2px; }
+.invest-text { font-size: 13px; color: var(--text2); line-height: 1.6; flex: 1; }
+.recipients-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+.recip-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; gap: 10px; }
+.recip-row:last-child { border-bottom: none; }
+.recip-actions { display: flex; gap: 8px; color: var(--text3); margin-left: auto; }
+.recip-actions svg { cursor: pointer; }
+.recip-provider { width: 140px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.recip-recipient { flex: 1; color: var(--text2); }
+.recip-severity { width: 80px; color: var(--text2); }
+.recip-mute { width: 60px; }
+.toggle-sm { width: 34px; height: 19px; border-radius: 10px; flex-shrink: 0; position: relative; cursor: pointer; }
+.toggle-sm.on { background: var(--green); }
+.toggle-sm.off { background: var(--bg4); }
+.toggle-sm::after { content:""; position: absolute; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; }
+.toggle-sm.on::after { right: 2px; left: auto; }
+.toggle-sm.off::after { left: 2px; }
+.anom-paginate { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--text3); }
+.anom-page-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); }
+.anom-page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.invest-row-btn { height: 27px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg2); font-size: 12px; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: var(--font); }
+.invest-row-btn:hover { background: var(--bg3); }
+.add-recip-btn { height: 30px; padding: 0 14px; background: var(--blue); border: none; border-radius: 6px; font-size: 13px; color: #fff; cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; }
+.integ-btn { height: 30px; padding: 0 12px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; font-size: 13px; color: var(--text2); cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; }
+.new-badge { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: var(--blue); color: #fff; font-weight: 500; }
+
+
+/* CANVAS INVESTIGATION SCREEN */
+.canvas-investigation-body { flex: 1; overflow-y: auto; padding: 24px; background: var(--bg); display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-content: start; }
+.canvas-main { display: flex; flex-direction: column; gap: 20px; }
+.canvas-meta-block { background: #f0f2f5; border-radius: 6px; padding: 14px 16px; font-family: var(--mono); font-size: 13px; color: var(--text2); line-height: 1.8; border: 1px solid var(--border); }
+.canvas-meta-block strong { color: var(--text); }
+.canvas-section-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.canvas-span-count { font-size: 14px; color: var(--text2); margin-bottom: 14px; }
+.canvas-span-count strong { color: var(--text); }
+.canvas-error-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.canvas-error-table th { font-size: 11px; font-weight: 500; color: var(--text3); text-align: left; padding: 0 12px 8px 0; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font); }
+.canvas-error-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text2); vertical-align: top; font-family: var(--mono); font-size: 12px; }
+.canvas-error-table tr:last-child td { border-bottom: none; }
+.canvas-findings { font-size: 14px; color: var(--text2); line-height: 1.7; }
+.canvas-findings strong { color: var(--text); }
+.canvas-findings p { margin-bottom: 14px; }
+.canvas-in-progress { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 13px; margin-top: 4px; }
+.canvas-spinner-dots { letter-spacing: 2px; }
+/* Sidebar steps */
+.canvas-sidebar { display: flex; flex-direction: column; gap: 0; }
+.canvas-sidebar-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+.canvas-sidebar-tab { padding: 8px 16px; font-size: 13px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.canvas-sidebar-tab.active { color: var(--text); font-weight: 500; border-bottom: 2px solid var(--text); }
+#canvas-steps { display: flex; flex-direction: column; gap: 10px; }
+.canvas-step { border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.5; }
+.canvas-step.complete { background: rgba(26,127,75,0.06); border: 1px solid rgba(26,127,75,0.2); }
+.canvas-step.running { background: rgba(37,99,200,0.05); border: 1px solid rgba(37,99,200,0.18); }
+.canvas-step-status { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px; }
+.canvas-step.complete .canvas-step-status { color: #1a7f4b; }
+.canvas-step.running .canvas-step-status { color: var(--blue); }
+.canvas-step-body { color: var(--text2); }
+.canvas-step-body strong { color: var(--text); }
 
 </style>
 </head>
@@ -208,7 +289,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>Boards</div>
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>Triggers</div>
   <div class="nav-sep"></div>
-  <div class="nav-item active" onclick="goTo('list')"><span class="nav-dot"></span>Anomalies</div>
+  <div class="nav-item active" onclick="goTo('list')"><span class="nav-dot"></span>Resources</div>
   <div class="nav-sep"></div>
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>Canvas</div>
   <div class="nav-item" onclick="goTo('list')"><span class="nav-dot"></span>History</div>
@@ -219,7 +300,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <!-- LIST -->
 <div class="screen active" id="screen-list">
   <div class="page-header">
-    <div class="page-title">Anomalies</div>
+    <div class="page-title">Resources</div>
     <div class="page-meta">Auto-discovered from telemetry · 47 services and hosts</div>
   </div>
   <div class="cards-row">
@@ -273,7 +354,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <!-- DETAIL -->
 <div class="screen" id="screen-detail">
   <div class="breadcrumb">
-    <span class="bc-link" onclick="goTo('list')">Anomalies</span>
+    <span class="bc-link" onclick="goTo('list')">Resources</span>
     <span class="bc-sep">/</span>
     <span class="bc-current" id="d-name">payment-service</span>
     <span class="tag" style="margin-left:6px" id="d-type-tag">service</span>
@@ -330,7 +411,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <!-- SIGNAL DETAIL -->
 <div class="screen" id="screen-signal">
   <div class="breadcrumb">
-    <span class="bc-link" onclick="goTo('list')">Anomalies</span>
+    <span class="bc-link" onclick="goTo('list')">Resources</span>
     <span class="bc-sep">/</span>
     <span class="bc-link" onclick="goTo('detail')" id="bc-svc">payment-service</span>
     <span class="bc-sep">/</span>
@@ -338,9 +419,9 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     <span class="badge anomalous" id="sig-badge" style="margin-left:8px"><span class="dot anomalous"></span>Anomalous</span>
   </div>
   <div class="signal-detail-header">
-    <div class="sdh-info">
-      <div class="sdh-title" id="sdh-title">Error rate</div>
-      <div class="sdh-meta">Medium sensitivity · Mar 10 2026 · 00:00 – 04:00 UTC</div>
+    <div class="signal-detail-title-area" style="flex:1">
+      <div class="signal-detail-title" id="sdh-title">payment</div>
+      <div class="signal-detail-subtitle" id="sdh-meta">Error rate · public-api · May 19 2026 · 14:29 – 16:29 UTC</div>
     </div>
     <button class="run-query-btn">Run Query →</button>
   </div>
@@ -349,33 +430,77 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   </div>
   <div class="signal-detail-body">
     <div>
-      <div class="chart-box" style="margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-sensitivity">Medium sensitivity threshold (default) <button class="change-btn">Change</button></div>
         <div class="chart-legend">
-          <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div>Signal value</div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div>Error rate</div>
           <div class="legend-item"><div class="legend-band" style="background:rgba(37,99,200,0.12)"></div>Typical range</div>
           <div class="legend-item"><div class="legend-band" style="background:rgba(192,57,43,0.2)"></div>Anomaly detected</div>
         </div>
-        <canvas id="signal-chart" height="100"></canvas>
+        <canvas id="signal-chart" height="110" style="width:100%;display:block"></canvas>
+        <div class="seasonality-callout">Seasonality enabled — the typical range accounts for time-of-day and day-of-week patterns.</div>
       </div>
-      <div class="col-title">Anomaly history</div>
-      <div class="anomaly-table">
-        <div class="at-head">
-          <span class="th">Time</span><span class="th">Duration</span><span class="th">Valid?</span>
+      <div class="auto-invest-card">
+        <div class="card-title" style="margin-bottom:12px">Automatic investigation <span class="new-badge-ns">New</span></div>
+        <div class="toggle-row">
+          <div class="toggle on"></div>
+          <div class="invest-text">Automatically start a Canvas investigation when an anomaly is detected.<br><span style="color:var(--text3)">If a Slack channel is configured as a recipient, the Honeycomb Canvas app will join the thread and provide AI-powered insights directly there.</span></div>
         </div>
-        <div class="at-row">
-          <span style="font-size:13px;color:var(--text2);font-family:var(--mono)">02:14 – 02:19</span>
-          <span style="font-size:13px;color:var(--text2)">5 min</span>
-          <div class="vote-group"><span class="vote-btn yes">Yes</span><span class="vote-btn no">No</span><span class="vote-btn unsure">Unsure</span></div>
+      </div>
+      <div class="anomaly-history-card">
+        <div class="card-title" style="margin-bottom:14px">Anomalies</div>
+        <table class="anom-table">
+          <thead><tr><th>Time ▾</th><th>Approximate duration</th><th>Is this a valid anomaly?</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-family:var(--mono)">Jun 1 02:14 – 02:19</td>
+              <td>5 minutes</td>
+              <td><span class="vote-btn yes"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 2 6.5 2C7.5 2 8 3 8 3L8 5H11C11.5 5 12 5.5 11.8 6L10.5 10.5C10.3 11 9.8 11 9.5 11H5C4.5 11 4 10.5 4 10V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V11" stroke="currentColor" stroke-width="1.2"/></svg> Yes</span><span class="vote-btn no"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 11 6.5 11C7.5 11 8 10 8 10L8 8H11C11.5 8 12 7.5 11.8 7L10.5 2.5C10.3 2 9.8 2 9.5 2H5C4.5 2 4 2.5 4 3V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V2" stroke="currentColor" stroke-width="1.2"/></svg> No</span><span class="vote-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 7.5V8M6.5 4.5C6.5 4.5 7.5 4.5 7.5 5.5C7.5 6.3 6.5 6.5 6.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Unsure</span></td>
+              <td style="text-align:right"><button class="invest-row-btn"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.2 3.5H10L7.2 6.5l1.1 3.5L5.5 8.3l-2.8 1.7 1.1-3.5L1 4.5h3.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg> Investigate</button></td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--mono)">Jun 1 01:00 – 01:08</td>
+              <td>8 minutes</td>
+              <td><span class="vote-btn yes"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 2 6.5 2C7.5 2 8 3 8 3L8 5H11C11.5 5 12 5.5 11.8 6L10.5 10.5C10.3 11 9.8 11 9.5 11H5C4.5 11 4 10.5 4 10V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V11" stroke="currentColor" stroke-width="1.2"/></svg> Yes</span><span class="vote-btn no"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 11 6.5 11C7.5 11 8 10 8 10L8 8H11C11.5 8 12 7.5 11.8 7L10.5 2.5C10.3 2 9.8 2 9.5 2H5C4.5 2 4 2.5 4 3V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V2" stroke="currentColor" stroke-width="1.2"/></svg> No</span><span class="vote-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 7.5V8M6.5 4.5C6.5 4.5 7.5 4.5 7.5 5.5C7.5 6.3 6.5 6.5 6.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Unsure</span></td>
+              <td style="text-align:right"><button class="invest-row-btn" onclick="goTo('canvas')"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.2 3.5H10L7.2 6.5l1.1 3.5L5.5 8.3l-2.8 1.7 1.1-3.5L1 4.5h3.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg> View Investigation</button></td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--mono)">May 31 13:41 – 13:46</td>
+              <td>5 minutes</td>
+              <td><span class="vote-btn yes"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 2 6.5 2C7.5 2 8 3 8 3L8 5H11C11.5 5 12 5.5 11.8 6L10.5 10.5C10.3 11 9.8 11 9.5 11H5C4.5 11 4 10.5 4 10V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V11" stroke="currentColor" stroke-width="1.2"/></svg> Yes</span><span class="vote-btn no"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><path d="M2 6.5C2 6.5 2.5 11 6.5 11C7.5 11 8 10 8 10L8 8H11C11.5 8 12 7.5 11.8 7L10.5 2.5C10.3 2 9.8 2 9.5 2H5C4.5 2 4 2.5 4 3V6.5H2Z" stroke="currentColor" stroke-width="1.2"/><path d="M4 6.5V2" stroke="currentColor" stroke-width="1.2"/></svg> No</span><span class="vote-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 7.5V8M6.5 4.5C6.5 4.5 7.5 4.5 7.5 5.5C7.5 6.3 6.5 6.5 6.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Unsure</span></td>
+              <td style="text-align:right"><button class="invest-row-btn"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1l1.2 3.5H10L7.2 6.5l1.1 3.5L5.5 8.3l-2.8 1.7 1.1-3.5L1 4.5h3.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg> Investigate</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="anom-paginate">
+          <span style="display:flex;align-items:center;gap:4px">Showing <select style="height:24px;border:1px solid var(--border2);border-radius:4px;font-size:12px;padding:0 4px;background:var(--bg2);color:var(--text2)"><option>1-25</option></select> of 32</span>
+          <div class="anom-page-btn">‹</div>
+          <div class="anom-page-btn active">1</div>
+          <div class="anom-page-btn">4</div>
+          <span style="color:var(--text3)">···</span>
+          <div class="anom-page-btn">›</div>
         </div>
-        <div class="at-row">
-          <span style="font-size:13px;color:var(--text2);font-family:var(--mono)">01:00 – 01:08</span>
-          <span style="font-size:13px;color:var(--text2)">8 min</span>
-          <div class="vote-group"><span class="vote-btn yes">Yes</span><span class="vote-btn no">No</span><span class="vote-btn unsure">Unsure</span></div>
+      </div>
+      <div class="recipients-card">
+        <div class="card-title" style="margin-bottom:8px">Recipients</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:14px">Every recipient on this list will be notified, unless they are muted. Slack and Pagerduty must be configured in the <span style="text-decoration:underline;cursor:pointer">Integration Center</span> before they can be added here.</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="add-recip-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg> Add Recipient</button>
+          <button class="integ-btn"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg> Integration Center</button>
         </div>
-        <div class="at-row">
-          <span style="font-size:13px;color:var(--text2);font-family:var(--mono)">Mar 9 · 13:41 – 13:46</span>
-          <span style="font-size:13px;color:var(--text2)">5 min</span>
-          <div class="vote-group"><span class="vote-btn yes">Yes</span><span class="vote-btn no">No</span><span class="vote-btn unsure">Unsure</span></div>
+        <div class="recip-row" style="padding-bottom:6px;border-bottom:1px solid var(--border)">
+          <span style="width:140px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Provider</span>
+          <span style="flex:1;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Recipient</span>
+          <span style="width:80px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Severity</span>
+          <span style="width:60px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Mute</span>
+          <span style="width:60px"></span>
+        </div>
+        <div class="recip-row">
+          <span style="width:140px;display:flex;align-items:center;gap:6px;color:var(--text2)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5l5.5 3.5L12 5" stroke="currentColor" stroke-width="1.2"/></svg> Email/Slack</span>
+          <span style="flex:1;color:var(--text2)">#alerts</span>
+          <span style="width:80px;color:var(--text2)">Critical</span>
+          <span style="width:60px"><div class="toggle-sm off"></div></span>
+          <span style="width:60px;display:flex;gap:8px;justify-content:flex-end;color:var(--text3)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 12l2-2 7-7-2-2-7 7-2 2zM10 3l1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 4h8M5 4V3h4v1M6 6v4M8 6v4M4 4l.5 7h5l.5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </div>
       </div>
     </div>
@@ -410,6 +535,77 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
           <div class="drill-link-icon"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="#4a4a4a" stroke-width="1.3"/><path d="M4.5 6.5h4M6.5 4.5v4" stroke="#4a4a4a" stroke-width="1.3" stroke-linecap="round"/></svg></div>
           <div><div class="drill-link-name">Query builder</div><div class="drill-link-desc" id="query-service-desc">payment-service · custom query</div></div>
           <span class="drill-link-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="screen" id="screen-canvas">
+  <div class="breadcrumb">
+    <span class="bc-link" onclick="goTo('list')">Resources</span>
+    <span class="bc-sep">/</span>
+    <span class="bc-link" onclick="goTo('detail')">payment</span>
+    <span class="bc-sep">/</span>
+    <span class="bc-link" onclick="goTo('signal')">Error rate</span>
+    <span class="bc-sep">/</span>
+    <span class="bc-current">Canvas investigation</span>
+  </div>
+  <div class="signal-detail-header">
+    <div class="signal-detail-title-area" style="flex:1">
+      <div class="signal-detail-title">Anomaly Investigation: payment / Error rate</div>
+    </div>
+  </div>
+  <div class="canvas-investigation-body">
+    <div class="canvas-main">
+      <div class="canvas-meta-block">
+        <strong>Service:</strong> payment (env: prod)<br>
+        <strong>Anomaly window:</strong> Jun 1 01:00 – 01:08<br>
+        <strong>Signal:</strong> Error rate
+      </div>
+      <div>
+        <div class="canvas-section-title">What the data shows so far</div>
+        <div class="canvas-span-count">Total errors during the anomaly window: <strong>~312 spans</strong>.</div>
+        <table class="canvas-error-table">
+          <thead><tr><th>Error type</th><th>Error message</th></tr></thead>
+          <tbody>
+            <tr><td>*errors.fundamental</td><td>grpc connection in unusable state: TRANSIENT_FAILURE</td></tr>
+            <tr><td>*errors.withMessage</td><td>unexpected context cancel: rpc error: DeadlineExceeded</td></tr>
+            <tr><td>context.deadlineExceededError</td><td>context deadline exceeded</td></tr>
+            <tr><td>*status.Error</td><td>rpc error: DeadlineExceeded - stream terminated RST_STREAM</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="canvas-section-title">Findings</div>
+        <div class="canvas-findings">
+          <p>Errors are concentrated in outbound gRPC calls from <strong>payment</strong> to downstream dependencies. The error pattern — TRANSIENT_FAILURE followed by DeadlineExceeded — is consistent with a dependency becoming temporarily unreachable rather than a bug in <strong>payment</strong> itself.</p>
+          <p><strong>checkout-service</strong> and <strong>order-service</strong>, both downstream of <strong>payment</strong>, show elevated latency beginning approximately 2 minutes after the anomaly window opened. This is consistent with upstream error propagation.</p>
+          <div class="canvas-in-progress">
+            <span class="canvas-spinner-dots">• ••</span>
+            <a style="color:var(--blue);cursor:pointer" onclick="goTo('signal')">Checking downstream impact on checkout-service...</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-sidebar">
+      <div class="canvas-sidebar-tabs">
+        <div class="canvas-sidebar-tab">Team</div>
+        <div class="canvas-sidebar-tab active">Your chat</div>
+      </div>
+      <div id="canvas-steps">
+        <div class="canvas-step complete">
+          <div class="canvas-step-status">COMPLETE</div>
+          <div class="canvas-step-body">Queried error breakdown for payment during the anomaly window. Found 312 spans with errors, majority gRPC connection failures pointing to a downstream dependency issue.</div>
+        </div>
+        <div class="canvas-step complete">
+          <div class="canvas-step-status">COMPLETE</div>
+          <div class="canvas-step-body">Checked dependency map. <strong>checkout-service</strong> and <strong>order-service</strong> are downstream. Both show latency increases starting ~2 min after anomaly onset — consistent with upstream propagation.</div>
+        </div>
+        <div class="canvas-step running" id="canvas-step-running">
+          <div class="canvas-step-status">RUNNING</div>
+          <div class="canvas-step-body"><span class="canvas-spinner-dots">• ••</span> Checking checkout-service error rate during window...</div>
         </div>
       </div>
     </div>
@@ -490,6 +686,23 @@ function goTo(screen){
   document.getElementById('screen-'+screen).classList.add('active');
   if(screen==='detail') setTimeout(drawMap,30);
   if(screen==='signal') setTimeout(drawSignalChart,30);
+  if(screen==='canvas') setTimeout(startCanvasAnimation, 100);
+}
+
+function startCanvasAnimation(){
+  const running = document.getElementById('canvas-step-running');
+  const steps = document.getElementById('canvas-steps');
+  if(!running || running.dataset.animated) return;
+  running.dataset.animated = '1';
+  setTimeout(()=>{
+    running.className = 'canvas-step complete';
+    running.querySelector('.canvas-step-status').textContent = 'COMPLETE';
+    running.querySelector('.canvas-step-body').innerHTML = 'Checked checkout-service error rate during window. Elevated — consistent with upstream propagation from payment.';
+    const newStep = document.createElement('div');
+    newStep.className = 'canvas-step running';
+    newStep.innerHTML = '<div class="canvas-step-status">RUNNING</div><div class="canvas-step-body"><span class="canvas-spinner-dots">• •• </span>Checking order-service latency during window...</div>';
+    steps.appendChild(newStep);
+  }, 2800);
 }
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 function nodeColor(s){return s==='anomalous'?'#c0392b':s==='normal'?'#1a7f4b':'#8a8a8a';}
@@ -501,6 +714,7 @@ function openDetail(name){
   document.getElementById('d-type-tag').textContent=res.type;
   document.getElementById('attr-svc').textContent=name;
   document.getElementById('bc-svc').textContent=name;
+  document.getElementById('sdh-title').textContent=name;
   const badge=document.getElementById('d-badge');
   badge.className='badge '+res.status;
   badge.innerHTML=`<span class="dot ${res.status}"></span>${cap(res.status)}`;
@@ -516,7 +730,7 @@ function openDetail(name){
 function openSignal(sigName,sigStatus,sigWindow){
   currentSignal=sigName; currentSignalStatus=sigStatus; currentWindow=sigWindow||'';
   document.getElementById('bc-sig').textContent=sigName;
-  document.getElementById('sdh-title').textContent=sigName;
+  document.getElementById('sdh-meta').textContent=sigName+' · '+sigWindow+' · May 19 2026 · 14:29 – 16:29 UTC';
   const b=document.getElementById('sig-badge');
   b.className='badge '+sigStatus;
   b.innerHTML=`<span class="dot ${sigStatus}"></span>${cap(sigStatus)}`;
